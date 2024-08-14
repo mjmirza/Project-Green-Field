@@ -10,14 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4  # Updated from v2 to v4
+      uses: actions/checkout@v4
 
     - name: Setup Python
-      uses: actions/setup-python@v5  # Updated from v2 to v5
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: Create and run commit script
+      id: commit  # Add this line to give the step an ID
       run: |
         cat > commit_script.py << EOL
         import random
@@ -70,10 +71,10 @@ jobs:
         EOL
 
         output=$(python commit_script.py)
-        echo $output >> $GITHUB_OUTPUT
+        echo "$output" >> $GITHUB_OUTPUT
 
     - name: Commit and push if needed
-      if: contains(steps.commit.outputs.COMMIT, 'true')
+      if: steps.commit.outputs.COMMIT == 'true'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
