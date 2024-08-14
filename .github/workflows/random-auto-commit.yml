@@ -1,0 +1,84 @@
+name: Random Auto Commit
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Create and run commit script
+      run: |
+        cat > commit_script.py << EOL
+        import random
+        import datetime
+        import os
+
+        def should_commit():
+            now = datetime.datetime.now()
+            date_string = now.strftime("%Y-%m-%d")
+            commit_file = "commit_data.txt"
+
+            if not os.path.exists(commit_file):
+                with open(commit_file, "w") as f:
+                    f.write(f"{date_string},0,{random.randint(30, 200)}")
+
+            with open(commit_file, "r") as f:
+                last_date, commits_today, target_commits = f.read().strip().split(",")
+
+            if last_date != date_string:
+                commits_today = 0
+                target_commits = random.randint(30, 200)
+
+            commits_today = int(commits_today)
+            target_commits = int(target_commits)
+
+            if commits_today >= target_commits:
+                return False
+
+            time_left = (datetime.datetime.combine(now.date(), datetime.time.max) - now).total_seconds()
+            intervals_left = time_left / 300  # 300 seconds = 5 minutes
+            prob_commit = (target_commits - commits_today) / intervals_left
+
+            should_commit = random.random() < prob_commit
+
+            if should_commit:
+                commits_today += 1
+
+            with open(commit_file, "w") as f:
+                f.write(f"{date_string},{commits_today},{target_commits}")
+
+            return should_commit
+
+        if should_commit():
+            commit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open("commit_times.txt", "a") as f:
+                f.write(f"Commit time: {commit_time}\\n")
+            print("COMMIT=true")
+        else:
+            print("COMMIT=false")
+        EOL
+
+        output=$(python commit_script.py)
+        echo $output >> $GITHUB_OUTPUT
+
+    - name: Commit and push if needed
+      if: contains(steps.commit.outputs.COMMIT, 'true')
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add commit_times.txt commit_data.txt
+        git commit -m "Auto commit: $(date -u)"
+        git push
