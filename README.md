@@ -6,7 +6,7 @@
 
 ---
 
-# 🎭 The Curious Case of the Self-Writing Code 🎭
+# The Curious Case of the Self-Writing Code 
 
 ## What's This All About? 🤔
 
