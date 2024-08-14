@@ -23,7 +23,56 @@ jobs:
       id: activity
       run: |
         cat > activity_script.py << EOL
-        # ... [Previous Python script remains unchanged] ...
+        import random
+        import datetime
+        import os
+
+        def should_act():
+            now = datetime.datetime.now()
+            date_string = now.strftime("%Y-%m-%d")
+            activity_file = "commit_data.txt"  # We're reusing the existing file
+
+            if not os.path.exists(activity_file) or os.path.getsize(activity_file) == 0:
+                activities_today = 0
+                target_activities = random.randint(10, 50)
+            else:
+                with open(activity_file, "r") as f:
+                    try:
+                        last_date, activities_today, target_activities = f.read().strip().split(",")
+                        activities_today = int(activities_today)
+                        target_activities = int(target_activities)
+                        if last_date != date_string:
+                            activities_today = 0
+                            target_activities = random.randint(10, 50)
+                    except ValueError:
+                        activities_today = 0
+                        target_activities = random.randint(10, 50)
+
+            if activities_today >= target_activities:
+                return "none"
+
+            time_left = (datetime.datetime.combine(now.date(), datetime.time.max) - now).total_seconds()
+            intervals_left = max(1, time_left / 300)  # Ensure we don't divide by zero
+            prob_act = (target_activities - activities_today) / intervals_left
+
+            if random.random() < prob_act:
+                activities_today += 1
+                activity_type = random.choice(["commit", "pr", "issue"])
+            else:
+                activity_type = "none"
+
+            with open(activity_file, "w") as f:
+                f.write(f"{date_string},{activities_today},{target_activities}")
+
+            return activity_type
+
+        activity = should_act()
+        print(f"ACTIVITY={activity}")
+
+        if activity != "none":
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open("activity_log.txt", "a") as f:
+                f.write(f"Activity: {activity} at {timestamp}\\n")
         EOL
 
         output=$(python activity_script.py)
@@ -34,7 +83,7 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add activity_log.txt activity_data.txt
+        git add commit_data.txt activity_log.txt
         git commit -m "Auto activity: Commit at $(date -u)"
         git push
 
