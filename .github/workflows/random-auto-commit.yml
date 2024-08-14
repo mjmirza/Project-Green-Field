@@ -18,7 +18,7 @@ jobs:
         python-version: '3.x'
 
     - name: Create and run commit script
-      id: commit  # Add this line to give the step an ID
+      id: commit
       run: |
         cat > commit_script.py << EOL
         import random
@@ -30,25 +30,28 @@ jobs:
             date_string = now.strftime("%Y-%m-%d")
             commit_file = "commit_data.txt"
 
-            if not os.path.exists(commit_file):
-                with open(commit_file, "w") as f:
-                    f.write(f"{date_string},0,{random.randint(30, 200)}")
-
-            with open(commit_file, "r") as f:
-                last_date, commits_today, target_commits = f.read().strip().split(",")
-
-            if last_date != date_string:
+            if not os.path.exists(commit_file) or os.path.getsize(commit_file) == 0:
                 commits_today = 0
                 target_commits = random.randint(30, 200)
-
-            commits_today = int(commits_today)
-            target_commits = int(target_commits)
+            else:
+                with open(commit_file, "r") as f:
+                    try:
+                        last_date, commits_today, target_commits = f.read().strip().split(",")
+                        commits_today = int(commits_today)
+                        target_commits = int(target_commits)
+                        if last_date != date_string:
+                            commits_today = 0
+                            target_commits = random.randint(30, 200)
+                    except ValueError:
+                        # If the file is corrupted or in wrong format, start fresh
+                        commits_today = 0
+                        target_commits = random.randint(30, 200)
 
             if commits_today >= target_commits:
                 return False
 
             time_left = (datetime.datetime.combine(now.date(), datetime.time.max) - now).total_seconds()
-            intervals_left = time_left / 300  # 300 seconds = 5 minutes
+            intervals_left = max(1, time_left / 300)  # Ensure we don't divide by zero
             prob_commit = (target_commits - commits_today) / intervals_left
 
             should_commit = random.random() < prob_commit
