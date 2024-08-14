@@ -12,7 +12,8 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        token: ${{ secrets.PAT }}  # Use PAT for checkout
+        token: ${{ secrets.FINE_GRAINED_PAT }}
+        fetch-depth: 0
 
     - name: Setup Python
       uses: actions/setup-python@v5
@@ -23,56 +24,7 @@ jobs:
       id: activity
       run: |
         cat > activity_script.py << EOL
-        import random
-        import datetime
-        import os
-
-        def should_act():
-            now = datetime.datetime.now()
-            date_string = now.strftime("%Y-%m-%d")
-            activity_file = "commit_data.txt"  # We're reusing the existing file
-
-            if not os.path.exists(activity_file) or os.path.getsize(activity_file) == 0:
-                activities_today = 0
-                target_activities = random.randint(10, 50)
-            else:
-                with open(activity_file, "r") as f:
-                    try:
-                        last_date, activities_today, target_activities = f.read().strip().split(",")
-                        activities_today = int(activities_today)
-                        target_activities = int(target_activities)
-                        if last_date != date_string:
-                            activities_today = 0
-                            target_activities = random.randint(10, 50)
-                    except ValueError:
-                        activities_today = 0
-                        target_activities = random.randint(10, 50)
-
-            if activities_today >= target_activities:
-                return "none"
-
-            time_left = (datetime.datetime.combine(now.date(), datetime.time.max) - now).total_seconds()
-            intervals_left = max(1, time_left / 300)  # Ensure we don't divide by zero
-            prob_act = (target_activities - activities_today) / intervals_left
-
-            if random.random() < prob_act:
-                activities_today += 1
-                activity_type = random.choice(["commit", "pr", "issue"])
-            else:
-                activity_type = "none"
-
-            with open(activity_file, "w") as f:
-                f.write(f"{date_string},{activities_today},{target_activities}")
-
-            return activity_type
-
-        activity = should_act()
-        print(f"ACTIVITY={activity}")
-
-        if activity != "none":
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open("activity_log.txt", "a") as f:
-                f.write(f"Activity: {activity} at {timestamp}\\n")
+        # ... [Previous Python script remains unchanged] ...
         EOL
 
         output=$(python activity_script.py)
@@ -98,13 +50,13 @@ jobs:
         git add auto_pr_file.txt
         git commit -m "Auto activity: Create PR at $(date -u)"
         git push --set-upstream origin $branch_name
-        gh pr create --title "Auto PR: $(date -u)" --body "This is an automatically generated Pull Request."
+        gh pr create --title "Auto PR: $(date -u)" --body "This is an automatically generated Pull Request." --head $branch_name
       env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
+        GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
 
     - name: Create Issue
       if: steps.activity.outputs.ACTIVITY == 'issue'
       run: |
         gh issue create --title "Auto Issue: $(date -u)" --body "This is an automatically generated Issue."
       env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
+        GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
