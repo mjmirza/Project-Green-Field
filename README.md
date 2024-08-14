@@ -1,4 +1,4 @@
-# Quirky Auto-Commit 🎭
+# Project Green Field | Auto-Commit 🎭
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mjmirza/Project-Green-Field/random-auto-commit.yml?label=Quirky%20Commits)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/mjmirza/Project-Green-Field)
@@ -36,7 +36,7 @@ Well, you've stumbled upon the digital equivalent of a naughty code fairy! 🧚�
 4. **The Sneaky Pusher** 🥷: Finally, it shoves the commit into your repo, leaving a trail of green squares in its wake.
    
 
-## 🚀 Step-by-Step Guide to Quirky Commit Madness
+## 🚀 Step-by-Step Guide to Project Green Field Commit Madness
 
 Want to join the project green field or an auto-commit party? 
 
