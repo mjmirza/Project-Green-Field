@@ -1,4 +1,4 @@
-name: Random Auto Commit
+name: Random Repo Activities
 
 on:
   schedule:
@@ -6,87 +6,103 @@ on:
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
-  auto-commit:
+  auto-activities:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # This line gives the job permission to push to the repo
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Fetch all history for all branches and tags
 
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
-    - name: Create and run commit script
-      id: commit
+    - name: Create and run activity script
+      id: activity
       run: |
-        cat > commit_script.py << EOL
+        cat > activity_script.py << EOL
         import random
         import datetime
         import os
 
-        def should_commit():
+        def should_act():
             now = datetime.datetime.now()
             date_string = now.strftime("%Y-%m-%d")
-            commit_file = "commit_data.txt"
+            activity_file = "activity_data.txt"
 
-            if not os.path.exists(commit_file) or os.path.getsize(commit_file) == 0:
-                commits_today = 0
-                target_commits = random.randint(30, 200)
+            if not os.path.exists(activity_file) or os.path.getsize(activity_file) == 0:
+                activities_today = 0
+                target_activities = random.randint(10, 50)
             else:
-                with open(commit_file, "r") as f:
+                with open(activity_file, "r") as f:
                     try:
-                        last_date, commits_today, target_commits = f.read().strip().split(",")
-                        commits_today = int(commits_today)
-                        target_commits = int(target_commits)
+                        last_date, activities_today, target_activities = f.read().strip().split(",")
+                        activities_today = int(activities_today)
+                        target_activities = int(target_activities)
                         if last_date != date_string:
-                            commits_today = 0
-                            target_commits = random.randint(30, 200)
+                            activities_today = 0
+                            target_activities = random.randint(10, 50)
                     except ValueError:
-                        # If the file is corrupted or in wrong format, start fresh
-                        commits_today = 0
-                        target_commits = random.randint(30, 200)
+                        activities_today = 0
+                        target_activities = random.randint(10, 50)
 
-            if commits_today >= target_commits:
-                return False
+            if activities_today >= target_activities:
+                return "none"
 
             time_left = (datetime.datetime.combine(now.date(), datetime.time.max) - now).total_seconds()
             intervals_left = max(1, time_left / 300)  # Ensure we don't divide by zero
-            prob_commit = (target_commits - commits_today) / intervals_left
+            prob_act = (target_activities - activities_today) / intervals_left
 
-            should_commit = random.random() < prob_commit
+            if random.random() < prob_act:
+                activities_today += 1
+                activity_type = random.choice(["commit", "pr", "issue"])
+            else:
+                activity_type = "none"
 
-            if should_commit:
-                commits_today += 1
+            with open(activity_file, "w") as f:
+                f.write(f"{date_string},{activities_today},{target_activities}")
 
-            with open(commit_file, "w") as f:
-                f.write(f"{date_string},{commits_today},{target_commits}")
+            return activity_type
 
-            return should_commit
+        activity = should_act()
+        print(f"ACTIVITY={activity}")
 
-        if should_commit():
-            commit_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            with open("commit_times.txt", "a") as f:
-                f.write(f"Commit time: {commit_time}\\n")
-            print("COMMIT=true")
-        else:
-            print("COMMIT=false")
+        if activity != "none":
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open("activity_log.txt", "a") as f:
+                f.write(f"Activity: {activity} at {timestamp}\\n")
         EOL
 
-        output=$(python commit_script.py)
+        output=$(python activity_script.py)
         echo "$output" >> $GITHUB_OUTPUT
 
-    - name: Commit and push if needed
-      if: steps.commit.outputs.COMMIT == 'true'
+    - name: Commit changes
+      if: steps.activity.outputs.ACTIVITY == 'commit'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add commit_times.txt commit_data.txt
-        git commit -m "Auto commit: $(date -u)"
+        git add activity_log.txt activity_data.txt
+        git commit -m "Auto activity: Commit at $(date -u)"
         git push
+
+    - name: Create Pull Request
+      if: steps.activity.outputs.ACTIVITY == 'pr'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        branch_name="auto-pr-$(date +%s)"
+        git checkout -b $branch_name
+        echo "This is an auto-generated PR at $(date -u)" >> auto_pr_file.txt
+        git add auto_pr_file.txt
+        git commit -m "Auto activity: Create PR at $(date -u)"
+        git push --set-upstream origin $branch_name
+        gh pr create --title "Auto PR: $(date -u)" --body "This is an automatically generated Pull Request."
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Issue
+      if: steps.activity.outputs.ACTIVITY == 'issue'
+      run: |
+        gh issue create --title "Auto Issue: $(date -u)" --body "This is an automatically generated Issue."
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
