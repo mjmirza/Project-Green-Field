@@ -11,6 +11,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.PAT }}  # Use PAT for checkout
 
     - name: Setup Python
       uses: actions/setup-python@v5
@@ -83,4 +86,4 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git add commit_times.txt commit_data.txt
         git commit -m "Auto commit: $(date -u)"
-        git push
+        git push https://${{ secrets.PAT }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
