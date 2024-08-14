@@ -75,5 +75,3 @@ Now go forth and let your repo run wild! May your commits be plentiful and your 
 ---
 
 *Disclaimer: This tool is for educational and entertainment purposes only. We're not responsible for any raised eyebrows, confused coworkers, or sudden promotions resulting from its use. Use at your own risk, you magnificent trickster!*
-
-*Disclaimer: This tool is for educational and entertainment purposes only. Iam not responsible for any raised eyebrows, confused coworkers, or sudden promotions resulting from its use. Use at your own risk, you magnificent trickster!*
