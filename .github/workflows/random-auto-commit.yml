@@ -58,7 +58,7 @@ jobs:
 
             if random.random() < prob_act:
                 activities_today += 1
-                activity_type = random.choice(["commit", "pr", "issue"])
+                activity_type = random.choice(["commit", "pr", "issue", "merge_pr", "close_issue"])
             else:
                 activity_type = "none"
 
@@ -105,5 +105,31 @@ jobs:
       if: steps.activity.outputs.ACTIVITY == 'issue'
       run: |
         gh issue create --title "Auto Issue: $(date -u)" --body "This is an automatically generated Issue."
+      env:
+        GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
+
+    - name: Merge Random Pull Request
+      if: steps.activity.outputs.ACTIVITY == 'merge_pr'
+      run: |
+        PR_TO_MERGE=$(gh pr list --limit 1 --json number --jq '.[0].number')
+        if [ ! -z "$PR_TO_MERGE" ]; then
+          gh pr merge $PR_TO_MERGE --merge --delete-branch
+          echo "Merged PR #$PR_TO_MERGE"
+        else
+          echo "No open PRs to merge"
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
+
+    - name: Close Random Issue
+      if: steps.activity.outputs.ACTIVITY == 'close_issue'
+      run: |
+        ISSUE_TO_CLOSE=$(gh issue list --limit 1 --json number --jq '.[0].number')
+        if [ ! -z "$ISSUE_TO_CLOSE" ]; then
+          gh issue close $ISSUE_TO_CLOSE
+          echo "Closed issue #$ISSUE_TO_CLOSE"
+        else
+          echo "No open issues to close"
+        fi
       env:
         GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
