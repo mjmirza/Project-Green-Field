@@ -5,7 +5,6 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/mjmirza/Project-Green-Field)
 ![Repo Size](https://img.shields.io/github/repo-size/mjmirza/Project-Green-Field.svg)
 ![License](https://img.shields.io/github/license/mjmirza/Project-Green-Field.svg)
-![Build Status](https://github.com/mjmirza/Project-Green-Field/actions/workflows/ci.yml/badge.svg)
 ![GitHub issues](https://img.shields.io/github/issues/mjmirza/Project-Green-Field)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/mjmirza/Project-Green-Field)
 ![Top Language](https://img.shields.io/github/languages/top/mjmirza/Project-Green-Field.svg)
