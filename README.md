@@ -3,6 +3,16 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mjmirza/Project-Green-Field/random-auto-commit.yml?label=Quirky%20Commits)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/mjmirza/Project-Green-Field)
 ![GitHub last commit](https://img.shields.io/github/last-commit/mjmirza/Project-Green-Field)
+![Repo Size](https://img.shields.io/github/repo-size/mjmirza/Project-Green-Field.svg)
+![License](https://img.shields.io/github/license/mjmirza/Project-Green-Field.svg)
+![Build Status](https://github.com/mjmirza/Project-Green-Field/actions/workflows/ci.yml/badge.svg)
+![GitHub issues](https://img.shields.io/github/issues/mjmirza/Project-Green-Field)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/mjmirza/Project-Green-Field)
+![Top Language](https://img.shields.io/github/languages/top/mjmirza/Project-Green-Field.svg)
+![Contributors](https://img.shields.io/github/contributors/mjmirza/Project-Green-Field.svg)
+![GitHub stars](https://img.shields.io/github/stars/mjmirza/Project-Green-Field.svg?style=social)
+![GitHub forks](https://img.shields.io/github/forks/mjmirza/Project-Green-Field.svg?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/mjmirza/Project-Green-Field.svg?style=social)
 
 ---
 
