@@ -58,7 +58,7 @@ jobs:
 
             if random.random() < prob_act:
                 activities_today += 1
-                activity_type = random.choice(["commit", "pr", "issue", "merge_pr", "close_issue"])
+                activity_type = random.choice(["commit", "pr", "issue", "merge_pr", "close_issue", "review_pr"])
             else:
                 activity_type = "none"
 
@@ -135,6 +135,31 @@ jobs:
           echo "Closed issue #$ISSUE_TO_CLOSE"
         else
           echo "No open issues to close"
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
+
+    - name: Review Random Pull Request
+      if: steps.activity.outputs.ACTIVITY == 'review_pr'
+      run: |
+        PR_TO_REVIEW=$(gh pr list --limit 1 --json number --jq '.[0].number')
+        if [ ! -z "$PR_TO_REVIEW" ]; then
+          REVIEW_ACTIONS=("approve" "comment" "request-changes")
+          RANDOM_ACTION=${REVIEW_ACTIONS[$RANDOM % ${#REVIEW_ACTIONS[@]}]}
+          case $RANDOM_ACTION in
+            approve)
+              gh pr review $PR_TO_REVIEW --approve -b "Auto-approved by Quirky Repo Activities"
+              ;;
+            comment)
+              gh pr review $PR_TO_REVIEW --comment -b "Auto-comment: This PR looks interesting!"
+              ;;
+            request-changes)
+              gh pr review $PR_TO_REVIEW --request-changes -b "Auto-review: Some changes might be needed here."
+              ;;
+          esac
+          echo "Reviewed PR #$PR_TO_REVIEW with action: $RANDOM_ACTION"
+        else
+          echo "No open PRs to review"
         fi
       env:
         GH_TOKEN: ${{ secrets.FINE_GRAINED_PAT }}
