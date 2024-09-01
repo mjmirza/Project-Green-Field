@@ -535,3 +535,4 @@ Activity: pr at 2024-09-01 15:16:45
 Activity: commit at 2024-09-01 16:12:35
 Activity: merge_pr at 2024-09-01 16:26:34
 Activity: merge_pr at 2024-09-01 16:38:23
+Activity: close_issue at 2024-09-01 16:46:35
